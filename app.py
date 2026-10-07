@@ -9,7 +9,7 @@ api_key = st.text_input("Apni Gemini API Key yahan dalein:", type="password")
 if api_key:
     genai.configure(api_key=api_key)
     # Google ke naye update ke anusaar 2.0-flash
-    model = genai.GenerativeModel("gemini-2.0-flash")
+    model = genai.GenerativeModel("gemini-3.8-flash")
 
     platform = st.selectbox(
         "Platform chunein:", 
