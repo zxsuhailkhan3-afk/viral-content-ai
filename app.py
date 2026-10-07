@@ -1,126 +1,155 @@
 import streamlit as st
 import google.generativeai as genai
 
-# 1. LOGO AUR APP TITLE SETTINGS
-# 'page_icon' mein aap apna emoji logo rakh sakte hain (jaise 🤖, 🔥, 🚀, 💬)
+# Mobile App configuration
 st.set_page_config(
-    page_title="Viral AI",
+    page_title="ChatGPT",
     page_icon="✨",
-    layout="centered",
+    layout="wide",
     initial_sidebar_state="collapsed"
 )
 
-# ChatGPT Style UI Theme
+# Custom Styling for exact ChatGPT Mobile App feel
 st.markdown("""
 <style>
-    /* Pure Black Background like ChatGPT */
+    /* Full Black Background & Padding reset */
     .stApp {
-        background-color: #0d0d0d;
-        color: #ECECF1;
+        background-color: #000000 !important;
+        color: #FFFFFF !important;
     }
     
-    /* Top Header Bar */
-    .chat-header {
+    /* Hide Streamlit default header decoration */
+    header[data-testid="stHeader"] {
+        background: transparent !important;
+        display: none !important;
+    }
+    
+    .block-container {
+        padding-top: 1rem !important;
+        padding-bottom: 5rem !important;
+        padding-left: 1rem !important;
+        padding-right: 1rem !important;
+    }
+
+    /* ChatGPT Top Bar */
+    .chatgpt-nav {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        padding: 8px 4px 18px 4px;
-        border-bottom: 1px solid #212121;
-        margin-bottom: 20px;
+        padding: 6px 0px 18px 0px;
     }
-    .chat-header-title {
-        font-size: 1.15rem;
-        font-weight: 600;
-        color: #E3E3E3;
-    }
-    .chat-badge {
+    .nav-circle-btn {
+        width: 44px;
+        height: 44px;
         background-color: #212121;
-        color: #10A37F;
-        padding: 5px 12px;
-        border-radius: 20px;
-        font-size: 0.8rem;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+        color: #ECECF1;
+        border: 1px solid #2A2A2A;
+    }
+    .nav-pill-btn {
+        background-color: #171717;
+        color: #ECECF1;
+        padding: 8px 18px;
+        border-radius: 25px;
+        font-size: 0.95rem;
         font-weight: 600;
-        border: 1px solid #2f2f2f;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        border: 1px solid #2B2B2B;
     }
-    
-    /* Selector Pills */
-    .stSelectbox label {
-        color: #9E9E9E !important;
-        font-size: 0.82rem !important;
-    }
+
+    /* Select Boxes Styling - Bold & Large */
     div[data-baseweb="select"] {
-        border-radius: 12px !important;
+        border-radius: 18px !important;
+        background-color: #181818 !important;
+        border: 1px solid #2E2E2E !important;
+        min-height: 48px !important;
     }
-    
-    /* Message styling */
+    div[data-baseweb="select"] * {
+        font-size: 1rem !important;
+        color: #F1F1F1 !important;
+    }
+
+    /* ChatGPT Chat Bubble Text */
     .stChatMessage {
         background-color: transparent !important;
-        border-radius: 12px;
-        padding: 10px 0px;
+        font-size: 1.08rem !important;
+        line-height: 1.6 !important;
+        padding: 12px 0px !important;
     }
     
-    /* Sticky Bottom Input Bar like ChatGPT */
+    /* Bottom Floating Rounded Input Bar like ChatGPT */
     div[data-testid="stChatInput"] {
-        border-radius: 24px !important;
+        border-radius: 28px !important;
         background-color: #212121 !important;
-        border: 1px solid #303030 !important;
+        border: 1px solid #363636 !important;
+        padding: 6px 14px !important;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6) !important;
     }
-    div[data-testid="stChatInput"]:focus-within {
-        border-color: #555555 !important;
+    div[data-testid="stChatInput"] textarea {
+        font-size: 1.05rem !important;
+        color: #FFFFFF !important;
+    }
+    div[data-testid="stChatInput"] textarea::placeholder {
+        color: #8E8EA0 !important;
     }
 </style>
 """, unsafe_allow_html=True)
 
-# API Configuration
+# API Setup
 API_KEY = "AQ.Ab8RN6K_3MpnxhiJ-O9PzYV4wdnn8D9jInE9ghK7g8uQLbHVYw"
 genai.configure(api_key=API_KEY)
 model = genai.GenerativeModel("models/gemini-3.8-flash")
 
-# Top ChatGPT-style Bar
+# Top ChatGPT Header Bar (Side buttons + Center Pill)
 st.markdown("""
-<div class="chat-header">
-    <div class="chat-header-title">✨ Viral AI</div>
-    <div class="chat-badge">Pro 2.5</div>
+<div class="chatgpt-nav">
+    <div class="nav-circle-btn">☰</div>
+    <div class="nav-pill-btn">✨ Viral AI</div>
+    <div class="nav-circle-btn">💬</div>
 </div>
 """, unsafe_allow_html=True)
 
-# Compact Filters (Platform & Tone)
+# Selectors as large tap-friendly dropdowns
 col1, col2 = st.columns(2)
 with col1:
     platform = st.selectbox("Platform", ["Instagram Reels", "YouTube Shorts", "Facebook Post", "LinkedIn"], label_visibility="collapsed")
 with col2:
-    tone = st.selectbox("Tone", ["Viral & Punchy", "Storytelling", "Educational", "Controversial"], label_visibility="collapsed")
+    tone = st.selectbox("Tone", ["Viral & Punchy", "Storytelling", "Educational", "Bold Hook"], label_visibility="collapsed")
 
-# Chat History Memory
+# Session State for Messages
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# Display Conversation History
+# Display Messages
 for msg in st.session_state.messages:
     with st.chat_message(msg["role"]):
         st.markdown(msg["content"])
 
-# Bottom Input Bar (ChatGPT style)
-prompt_topic = st.chat_input("Apna video ya post topic yahan likhein...")
+# Bottom Input Bar
+prompt_topic = st.chat_input("Ask Viral AI (topic ya idea likhein)...")
 
 if prompt_topic:
-    # User message display
     st.session_state.messages.append({"role": "user", "content": prompt_topic})
     with st.chat_message("user"):
         st.markdown(prompt_topic)
 
-    # AI Response generation
     with st.chat_message("assistant"):
-        with st.spinner("Writing blueprint..."):
+        with st.spinner("AI likh raha hai..."):
             system_prompt = f"""
-            You are an elite viral social media strategist.
-            Create high-converting, viral content for {platform} with tone '{tone}'.
+            You are a top viral social media manager.
+            Create high-engagement viral content for {platform} with tone '{tone}'.
             Topic: {prompt_topic}
 
-            Format cleanly:
-            ### 🎣 3 Viral Hooks
-            ### 📜 Full Script & Pacing
-            ### ✍️ Caption & Call to Action (CTA)
+            Format:
+            ### 🎣 Viral Hook (0-3 Sec)
+            ### 📜 Full Script & Scene Flow
+            ### ✍️ Caption & CTA
             ### 🏷️ 15 Trending Hashtags
             """
             try:
