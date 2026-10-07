@@ -1,96 +1,107 @@
 import streamlit as st
 import google.generativeai as genai
-from datetime import datetime
+import requests
 
-# Mobile Native Layout
+# 1. Native Mobile Screen Fit
 st.set_page_config(
-    page_title="Gemini",
+    page_title="Gemini AI",
     page_icon="✨",
     layout="centered",
     initial_sidebar_state="expanded"
 )
 
-# Custom Mobile CSS
+# 2. Complete Mobile Scaling CSS (ChatGPT / Gemini look)
 st.markdown("""
 <style>
+    /* Full Phone Black Background */
     html, body, [data-testid="stAppViewContainer"], .stApp {
         background-color: #0b0b0e !important;
         color: #E3E3E8 !important;
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
     }
-    header[data-testid="stHeader"] {
-        background-color: #0b0b0e !important;
-    }
+    
+    /* Mobile Screen padding */
     .block-container {
         padding-top: 1rem !important;
-        padding-bottom: 6rem !important;
-        padding-left: 0.8rem !important;
-        padding-right: 0.8rem !important;
+        padding-bottom: 6.5rem !important;
+        padding-left: 0.9rem !important;
+        padding-right: 0.9rem !important;
         max-width: 100% !important;
     }
+
+    /* Top Mode Header */
+    .top-pill {
+        background-color: #1a1a24;
+        color: #60A5FA;
+        padding: 6px 14px;
+        border-radius: 20px;
+        font-size: 0.95rem;
+        font-weight: 600;
+        display: inline-block;
+        border: 1px solid #2a2a3a;
+        margin-bottom: 12px;
+    }
+
+    /* Floating Rounded Bottom Input */
     div[data-testid="stChatInput"] {
         border-radius: 28px !important;
-        background-color: #1e1e26 !important;
-        border: 1px solid #333344 !important;
-        padding: 4px 10px !important;
+        background-color: #1e1e28 !important;
+        border: 1px solid #36364a !important;
+        padding: 4px 12px !important;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.8) !important;
     }
     div[data-testid="stChatInput"] textarea {
         color: #FFFFFF !important;
         font-size: 1.05rem !important;
     }
-    section[data-testid="stSidebar"] {
-        background-color: #121218 !important;
-        border-right: 1px solid #22222d !important;
+    
+    .stChatMessage {
+        font-size: 1.05rem !important;
+        line-height: 1.6 !important;
     }
 </style>
 """, unsafe_allow_html=True)
 
-# Yahan apni Step 1 wali AIzaSy key paste karein
-API_KEY = "AIzaSy_APNI_KEY_YAHAN_DALO"
-
-# Agar code mein key na badli ho toh screen par mangega
-if not API_KEY.startswith("AIzaSy"):
-    user_key = st.sidebar.text_input("Gemini API Key (AIzaSy...):", type="password")
-    if user_key:
-        API_KEY = user_key.strip()
-
-# Initialize Chat Memory
+# Chat History Memory
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
 
-# --- WORKING SIDEBAR DRAWER (Recent Chats + Features) ---
+# --- SIDEBAR CONTROLS ---
 with st.sidebar:
     st.markdown("## ✨ Gemini Studio")
-    if st.button("➕ New chat", use_container_width=True):
+    
+    # API Key Input Box
+    user_api_key = st.text_input(
+        "🔑 Gemini API Key dalein:",
+        value="AQ.Ab8RN6KhaojI0Q2YVKIMkiNKOuYBDVa6c5N07YUUtmaq3iFXJg",
+        type="password"
+    )
+    
+    st.markdown("---")
+    st.markdown("### 🧭 Mode Chunein")
+    app_mode = st.radio(
+        "Kiske baare mein baat karni hai:",
+        [
+            "💬 General Chat (Sab Kuch Pucho / Baat Karo)",
+            "🎓 Students Help (Padhai, Maths, Coding)",
+            "💰 Online Earning (Kamayi Ke Tarike & Roadmap)",
+            "📖 Story Writer (Horror, Romance, Suspense)",
+            "📱 Viral Social Media (Reels & Shorts Scripts)"
+        ]
+    )
+    
+    st.markdown("---")
+    if st.button("➕ New Chat (Screen Clear Karein)", use_container_width=True):
         st.session_state.chat_history = []
         st.rerun()
 
-    st.markdown("---")
-    st.markdown("### 🧭 Special Features")
-    app_mode = st.radio(
-        "Feature Mode:",
-        [
-            "💬 General AI Chat (Sab Kuch Pucho)",
-            "🎓 Students Help (Maths, Science, Code)",
-            "💰 Online Earning & Business Roadmap",
-            "📖 Story Writer (Horror, Suspense, Love)",
-            "📱 Viral Social Media (Reels & Shorts)"
-        ]
-    )
+# Top Indicator
+st.markdown(f'<div class="top-pill">✨ {app_mode.split("(")[0].strip()}</div>', unsafe_allow_html=True)
 
-    st.markdown("---")
-    with st.expander("⚙️ Chat Options (Pop-up Menu)", expanded=False):
-        if st.button("🗑️ Clear Conversation", use_container_width=True):
-            st.session_state.chat_history = []
-            st.rerun()
-
-# Top Title Bar
-st.markdown(f"#### ✨ {app_mode.split('(')[0].strip()}")
-
-# Show Empty State or Messages
+# Display Messages
 if len(st.session_state.chat_history) == 0:
     st.markdown("""
-    <div style="text-align: center; margin-top: 18vh; color: #8F8FA0;">
+    <div style="text-align: center; margin-top: 16vh; color: #8F8FA0;">
         <h2 style="color: #FFFFFF; font-size: 2.2rem; margin-bottom: 6px;">Gemini</h2>
         <p style="font-size: 1rem;">Ask anything, padhai, kamayi ya kahani likhwao...</p>
     </div>
@@ -100,7 +111,7 @@ else:
         with st.chat_message(msg["role"]):
             st.markdown(msg["content"])
 
-# Bottom Floating Input
+# Bottom Input
 user_query = st.chat_input("Ask Gemini / Kuch bhi pucho...")
 
 if user_query:
@@ -109,21 +120,42 @@ if user_query:
         st.markdown(user_query)
 
     with st.chat_message("assistant"):
-        if not API_KEY.startswith("AIzaSy"):
-            err_box = "Kripya sidebar mein apni valid 'AIzaSy' wali Gemini API Key dalein."
-            st.error(err_box)
-            st.session_state.chat_history.append({"role": "assistant", "content": err_box})
+        api_key = user_api_key.strip()
+        if not api_key:
+            err = "Kripya sidebar mein apni API key dalein."
+            st.error(err)
+            st.session_state.chat_history.append({"role": "assistant", "content": err})
         else:
-            with st.spinner("Gemini is answering..."):
-                try:
-                    genai.configure(api_key=API_KEY)
-                    model = genai.GenerativeModel("models/gemini-2.5-flash")
-                    
-                    full_prompt = f"Mode: {app_mode}\nUser Request: {user_query}\nAnswer clearly in Hinglish/Hindi or English as requested."
-                    response = model.generate_content(full_prompt)
-                    ans = response.text
-                    st.markdown(ans)
-                    st.session_state.chat_history.append({"role": "assistant", "content": ans})
-                except Exception as e:
-                    st.error(f"Error: {e}")
-                    
+            with st.spinner("Gemini soch raha hai..."):
+                prompt = f"Mode: {app_mode}\nUser Query: {user_query}\nJawab Hinglish ya Hindi mein detailed aur helpful dein."
+                
+                # Check key type (Standard AIza vs REST AQ)
+                if api_key.startswith("AIzaSy"):
+                    try:
+                        genai.configure(api_key=api_key)
+                        model = genai.GenerativeModel("models/gemini-2.5-flash")
+                        res = model.generate_content(prompt)
+                        reply = res.text
+                        st.markdown(reply)
+                        st.session_state.chat_history.append({"role": "assistant", "content": reply})
+                    except Exception as e:
+                        st.error(f"Error: {e}")
+                else:
+                    # REST call for AQ. keys
+                    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key={api_key}"
+                    headers = {"Content-Type": "application/json"}
+                    payload = {"contents": [{"parts": [{"text": prompt}]}]}
+                    try:
+                        resp = requests.post(url, headers=headers, json=payload, timeout=25)
+                        data = resp.json()
+                        if resp.status_code == 200:
+                            reply = data["candidates"][0]["content"]["parts"][0]["text"]
+                            st.markdown(reply)
+                            st.session_state.chat_history.append({"role": "assistant", "content": reply})
+                        else:
+                            err_msg = data.get("error", {}).get("message", resp.text)
+                            st.error(f"API Error: {err_msg}")
+                            st.session_state.chat_history.append({"role": "assistant", "content": err_msg})
+                    except Exception as ex:
+                        st.error(f"Network error: {ex}")
+                        
