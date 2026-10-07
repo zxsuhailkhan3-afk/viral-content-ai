@@ -8,6 +8,8 @@ api_key = st.text_input("Apni Gemini API Key yahan dalein:", type="password")
 
 if api_key:
     genai.configure(api_key=api_key)
+    # Google ke naye update ke anusaar 2.0-flash
+    model = genai.GenerativeModel("gemini-2.0-flash")
 
     platform = st.selectbox(
         "Platform chunein:", 
@@ -29,28 +31,9 @@ if api_key:
                 4. 15 Trending Hashtags
                 """
                 try:
-                    # Auto-detect supported model from your account
-                    available_models = [
-                        m.name for m in genai.list_models() 
-                        if "generateContent" in m.supported_generation_methods
-                    ]
-                    
-                    # Target flash first, otherwise take the first supported model
-                    chosen_model = None
-                    for m in available_models:
-                        if "flash" in m:
-                            chosen_model = m
-                            break
-                    if not chosen_model and available_models:
-                        chosen_model = available_models[0]
-
-                    if not chosen_model:
-                        st.error("Aapke account par koi generateContent model nahi mila.")
-                    else:
-                        model = genai.GenerativeModel(chosen_model)
-                        response = model.generate_content(prompt)
-                        st.success(f"Content taiyaar hai! (Model: {chosen_model})")
-                        st.markdown(response.text)
+                    response = model.generate_content(prompt)
+                    st.success("Aapka content ready hai!")
+                    st.markdown(response.text)
                 except Exception as e:
                     st.error(f"API Error: {e}")
         else:
