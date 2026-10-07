@@ -29,20 +29,30 @@ if api_key:
                 4. 15 Trending Hashtags
                 """
                 try:
-                    # Specific direct model identifier
-                    model = genai.GenerativeModel("gemini-1.5-flash-latest")
-                    response = model.generate_content(prompt)
-                    st.success("Aapka content ready hai!")
-                    st.markdown(response.text)
-                except Exception as e:
-                    # Auto fallback to standard gemini-pro if flash is blocked
-                    try:
-                        model_fallback = genai.GenerativeModel("gemini-pro")
-                        response = model_fallback.generate_content(prompt)
-                        st.success("Aapka content ready hai!")
+                    # Auto-detect supported model from your account
+                    available_models = [
+                        m.name for m in genai.list_models() 
+                        if "generateContent" in m.supported_generation_methods
+                    ]
+                    
+                    # Target flash first, otherwise take the first supported model
+                    chosen_model = None
+                    for m in available_models:
+                        if "flash" in m:
+                            chosen_model = m
+                            break
+                    if not chosen_model and available_models:
+                        chosen_model = available_models[0]
+
+                    if not chosen_model:
+                        st.error("Aapke account par koi generateContent model nahi mila.")
+                    else:
+                        model = genai.GenerativeModel(chosen_model)
+                        response = model.generate_content(prompt)
+                        st.success(f"Content taiyaar hai! (Model: {chosen_model})")
                         st.markdown(response.text)
-                    except Exception as err:
-                        st.error(f"API Error: {err}")
+                except Exception as e:
+                    st.error(f"API Error: {e}")
         else:
             st.warning("Pehle topic likhein!")
 else:
