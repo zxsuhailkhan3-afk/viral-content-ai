@@ -9,6 +9,7 @@ api_key = st.text_input("Apni Gemini API Key yahan dalein:", type="password")
 if api_key:
     genai.configure(api_key=api_key)
     model = genai.GenerativeModel("gemini-1.5-flash")
+    
 
     platform = st.selectbox("Platform chunein:", ["Instagram Reels", "YouTube Shorts / Video", "Facebook Post"])
     topic = st.text_area("Aapka video ya post kis baare mein hai?")
