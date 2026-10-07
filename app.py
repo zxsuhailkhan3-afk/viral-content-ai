@@ -98,7 +98,7 @@ st.markdown("""
 # API Setup
 API_KEY = "AQ.Ab8RN6K_3MpnxhiJ-O9PzYV4wdnn8D9jInE9ghK7g8uQLbHVYw"
 genai.configure(api_key=API_KEY)
-model = genai.GenerativeModel("models/gemini-2.5-flash")
+model = genai.GenerativeModel("models/gemini-3.8-flash")
 
 # Session state initialization
 if "all_chats" not in st.session_state:
