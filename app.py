@@ -1,102 +1,54 @@
 import streamlit as st
 import google.generativeai as genai
 
-# Mobile App configuration
+# Page Configuration
 st.set_page_config(
-    page_title="ChatGPT",
+    page_title="Viral AI Pro",
     page_icon="✨",
     layout="wide",
     initial_sidebar_state="collapsed"
 )
 
-# Custom Styling for exact ChatGPT Mobile App feel
+# Dark ChatGPT Theme CSS
 st.markdown("""
 <style>
-    /* Full Black Background & Padding reset */
     .stApp {
-        background-color: #000000 !important;
-        color: #FFFFFF !important;
+        background-color: #0b0b0f !important;
+        color: #ECECF1 !important;
     }
-    
-    /* Hide Streamlit default header decoration */
     header[data-testid="stHeader"] {
         background: transparent !important;
-        display: none !important;
     }
-    
     .block-container {
-        padding-top: 1rem !important;
-        padding-bottom: 5rem !important;
-        padding-left: 1rem !important;
-        padding-right: 1rem !important;
+        padding-top: 2rem !important;
+        padding-bottom: 6rem !important;
     }
-
-    /* ChatGPT Top Bar */
-    .chatgpt-nav {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 6px 0px 18px 0px;
-    }
-    .nav-circle-btn {
-        width: 44px;
-        height: 44px;
-        background-color: #212121;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.25rem;
-        color: #ECECF1;
-        border: 1px solid #2A2A2A;
-    }
-    .nav-pill-btn {
-        background-color: #171717;
-        color: #ECECF1;
-        padding: 8px 18px;
-        border-radius: 25px;
-        font-size: 0.95rem;
+    /* Top Bar Title */
+    .chat-pill {
+        background: #1e1e24;
+        color: #fff;
+        padding: 6px 16px;
+        border-radius: 20px;
         font-weight: 600;
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        border: 1px solid #2B2B2B;
+        font-size: 0.95rem;
+        display: inline-block;
+        border: 1px solid #2d2d38;
+        margin-bottom: 15px;
     }
-
-    /* Select Boxes Styling - Bold & Large */
-    div[data-baseweb="select"] {
-        border-radius: 18px !important;
-        background-color: #181818 !important;
-        border: 1px solid #2E2E2E !important;
-        min-height: 48px !important;
+    /* Sidebar Styling */
+    section[data-testid="stSidebar"] {
+        background-color: #121217 !important;
+        border-right: 1px solid #23232d !important;
     }
-    div[data-baseweb="select"] * {
-        font-size: 1rem !important;
-        color: #F1F1F1 !important;
-    }
-
-    /* ChatGPT Chat Bubble Text */
-    .stChatMessage {
-        background-color: transparent !important;
-        font-size: 1.08rem !important;
-        line-height: 1.6 !important;
-        padding: 12px 0px !important;
-    }
-    
-    /* Bottom Floating Rounded Input Bar like ChatGPT */
+    /* Bottom Chat Input Bar */
     div[data-testid="stChatInput"] {
-        border-radius: 28px !important;
-        background-color: #212121 !important;
-        border: 1px solid #363636 !important;
-        padding: 6px 14px !important;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6) !important;
+        border-radius: 26px !important;
+        background-color: #1e1e24 !important;
+        border: 1px solid #32323f !important;
     }
     div[data-testid="stChatInput"] textarea {
-        font-size: 1.05rem !important;
         color: #FFFFFF !important;
-    }
-    div[data-testid="stChatInput"] textarea::placeholder {
-        color: #8E8EA0 !important;
+        font-size: 1rem !important;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -106,59 +58,104 @@ API_KEY = "AQ.Ab8RN6K_3MpnxhiJ-O9PzYV4wdnn8D9jInE9ghK7g8uQLbHVYw"
 genai.configure(api_key=API_KEY)
 model = genai.GenerativeModel("models/gemini-3.8-flash")
 
-# Top ChatGPT Header Bar (Side buttons + Center Pill)
-st.markdown("""
-<div class="chatgpt-nav">
-    <div class="nav-circle-btn">☰</div>
-    <div class="nav-pill-btn">✨ Viral AI</div>
-    <div class="nav-circle-btn">💬</div>
-</div>
-""", unsafe_allow_html=True)
+# --- REAL WORKING SIDEBAR (☰ Menu) ---
+with st.sidebar:
+    st.markdown("### ⚙️ AI Studio Settings")
+    
+    app_mode = st.selectbox(
+        "AI Feature Mode:",
+        [
+            "📱 Viral Social Media AI", 
+            "📖 Master Story Writer", 
+            "💬 Normal ChatGPT Bot", 
+            "💼 Professional Copywriter"
+        ]
+    )
 
-# Selectors as large tap-friendly dropdowns
-col1, col2 = st.columns(2)
-with col1:
-    platform = st.selectbox("Platform", ["Instagram Reels", "YouTube Shorts", "Facebook Post", "LinkedIn"], label_visibility="collapsed")
-with col2:
-    tone = st.selectbox("Tone", ["Viral & Punchy", "Storytelling", "Educational", "Bold Hook"], label_visibility="collapsed")
+    st.markdown("---")
+    
+    # Dynamic settings based on selected mode
+    if app_mode == "📖 Master Story Writer":
+        st.markdown("#### 🎭 Story Controls")
+        story_genre = st.selectbox("Story Type:", ["Horror & Suspense 👻", "Emotional & Romantic ❤️", "Motivational & Success 🚀", "Thriller / Crime 🕵️", "Desi Village Life 🌾", "Sci-Fi / Future 🤖"])
+        story_length = st.select_slider("Kahani Ki Lambai:", options=["Short (1-2 Min)", "Medium (Reel / Video)", "Long Deep Story"])
+        story_lang = st.selectbox("Language:", ["Hinglish (Roman)", "Pure Hindi", "English"])
+    
+    elif app_mode == "📱 Viral Social Media AI":
+        st.markdown("#### 🎯 Platform Controls")
+        target_platform = st.selectbox("Platform:", ["Instagram Reels", "YouTube Shorts", "Facebook Video", "X (Twitter) Thread", "LinkedIn"])
+        viral_tone = st.selectbox("Tone:", ["Ultra Viral & Punchy 🔥", "Curiosity / Mystery 🤫", "Informative 🧠", "Aggressive Hook ⚡"])
+    
+    st.markdown("---")
+    if st.button("🗑️ New Chat (Reset)"):
+        st.session_state.messages = []
+        st.rerun()
 
-# Session State for Messages
+# Top Header Indicator
+st.markdown(f'<div class="chat-pill">✨ {app_mode}</div>', unsafe_allow_html=True)
+
+# Chat Session Memory
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# Display Messages
+# Show Previous Chat Messages
 for msg in st.session_state.messages:
     with st.chat_message(msg["role"]):
         st.markdown(msg["content"])
 
 # Bottom Input Bar
-prompt_topic = st.chat_input("Ask Viral AI (topic ya idea likhein)...")
+user_prompt = st.chat_input("Kuch bhi pucho ya story/topic ka idea yahan likhein...")
 
-if prompt_topic:
-    st.session_state.messages.append({"role": "user", "content": prompt_topic})
+if user_prompt:
+    st.session_state.messages.append({"role": "user", "content": user_prompt})
     with st.chat_message("user"):
-        st.markdown(prompt_topic)
+        st.markdown(user_prompt)
 
     with st.chat_message("assistant"):
         with st.spinner("AI likh raha hai..."):
-            system_prompt = f"""
-            You are a top viral social media manager.
-            Create high-engagement viral content for {platform} with tone '{tone}'.
-            Topic: {prompt_topic}
+            # Custom system prompt according to active mode
+            if app_mode == "📖 Master Story Writer":
+                system_instruction = f"""
+                You are a world-class award-winning storyteller and scriptwriter.
+                Write a gripping story based on: '{user_prompt}'.
+                Genre: {story_genre}
+                Length: {story_length}
+                Language Format: {story_lang}
 
-            Format:
-            ### 🎣 Viral Hook (0-3 Sec)
-            ### 📜 Full Script & Scene Flow
-            ### ✍️ Caption & CTA
-            ### 🏷️ 15 Trending Hashtags
-            """
+                Format properly:
+                - **Catchy Title**
+                - **Scene Setup / Character Introduction**
+                - **The Climax / Turning Point**
+                - **Emotional / Shocking Ending**
+                - **Moral or Key Takeaway**
+                """
+            elif app_mode == "📱 Viral Social Media AI":
+                system_instruction = f"""
+                You are a top viral growth strategist.
+                Create high-retention content for {target_platform} with tone '{viral_tone}'.
+                Topic: '{user_prompt}'
+
+                Format:
+                ### 🎣 Viral Hooks (0-3s)
+                ### 📜 Full Script with Camera/Visual Directions
+                ### ✍️ High-Engagement Caption & Call to Action (CTA)
+                ### 🏷️ 15 Trending Hashtags
+                """
+            elif app_mode == "💼 Professional Copywriter":
+                system_instruction = f"""
+                You are an expert copywriter. Write a persuasive, high-converting marketing copy on: '{user_prompt}'.
+                Include strong headline, problem agitation, solution, social proof angle, and call to action.
+                """
+            else: # Normal ChatGPT Bot
+                system_instruction = f"You are a helpful, smart AI assistant like ChatGPT. Answer user query comprehensively: '{user_prompt}'."
+
             try:
-                response = model.generate_content(system_prompt)
-                output_text = response.text
-                st.markdown(output_text)
-                st.session_state.messages.append({"role": "assistant", "content": output_text})
+                response = model.generate_content(system_instruction)
+                output_content = response.text
+                st.markdown(output_content)
+                st.session_state.messages.append({"role": "assistant", "content": output_content})
             except Exception as e:
-                err_msg = f"Error: {e}"
-                st.error(err_msg)
-                st.session_state.messages.append({"role": "assistant", "content": err_msg})
-                
+                err = f"API Error: {e}"
+                st.error(err)
+                st.session_state.messages.append({"role": "assistant", "content": err})
+    
