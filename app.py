@@ -1,55 +1,69 @@
 import streamlit as st
 import google.generativeai as genai
 
-# Page Configuration
+# Proper Mobile App Viewport Settings
 st.set_page_config(
-    page_title="Omni AI Pro",
+    page_title="Omni AI",
     page_icon="🤖",
-    layout="wide",
+    layout="centered",
     initial_sidebar_state="collapsed"
 )
 
-# Dark Sleek UI Styling
+# Native Mobile App Styling (ChatGPT Look)
 st.markdown("""
 <style>
+    /* Mobile App Pure Black Background */
     .stApp {
         background-color: #0b0b0e !important;
         color: #F1F1F5 !important;
     }
+    
+    /* Top Header clean-up */
     header[data-testid="stHeader"] {
         background: transparent !important;
     }
+    
+    /* Mobile padding & font enlargement */
     .block-container {
-        padding-top: 1.5rem !important;
-        padding-bottom: 6rem !important;
+        max-width: 100% !important;
+        padding-top: 1rem !important;
+        padding-bottom: 5.5rem !important;
+        padding-left: 0.8rem !important;
+        padding-right: 0.8rem !important;
     }
-    /* Top Pill Header */
-    .top-mode-pill {
+    
+    /* Active Mode Pill */
+    .top-pill {
         background-color: #1a1a24;
         color: #60A5FA;
-        padding: 6px 16px;
+        padding: 8px 16px;
         border-radius: 20px;
         font-weight: 600;
-        font-size: 0.9rem;
+        font-size: 0.95rem;
         display: inline-block;
         border: 1px solid #2a2a38;
         margin-bottom: 12px;
     }
-    /* Sidebar Theme */
+    
+    /* Mobile Drawer Sidebar */
     section[data-testid="stSidebar"] {
         background-color: #121218 !important;
         border-right: 1px solid #22222d !important;
     }
-    /* Chat Input Bar */
+    
+    /* ChatGPT Mobile Style Bottom Floating Input */
     div[data-testid="stChatInput"] {
-        border-radius: 26px !important;
-        background-color: #1b1b22 !important;
-        border: 1px solid #2f2f3d !important;
+        border-radius: 28px !important;
+        background-color: #1f1f27 !important;
+        border: 1px solid #323242 !important;
+        padding: 4px 10px !important;
     }
     div[data-testid="stChatInput"] textarea {
         color: #FFFFFF !important;
         font-size: 1.05rem !important;
     }
+    
+    /* Chat message text size */
     .stChatMessage {
         font-size: 1.05rem !important;
         line-height: 1.6 !important;
@@ -62,109 +76,80 @@ API_KEY = "AQ.Ab8RN6K_3MpnxhiJ-O9PzYV4wdnn8D9jInE9ghK7g8uQLbHVYw"
 genai.configure(api_key=API_KEY)
 model = genai.GenerativeModel("models/gemini-3.8-flash")
 
-# --- SMART SIDEBAR DRAWER (☰ Menu) ---
+# --- MOBILE SIDEBAR DRAWER (☰ menu dabane par hi khulega) ---
 with st.sidebar:
     st.markdown("### ⚡ AI Master Studio")
     
     mode = st.selectbox(
-        "AI Mode Chunein:",
+        "AI Feature Mode:",
         [
             "💬 Full Free Chat & Talk (Har cheez pucho)",
-            "🎓 Student Study Tutor (Maths, Science, History, Code)",
-            "💰 Online Earning & Business Master (Ghar baithe kamayi)",
-            "📖 Story & Novel Writer (Kahaniyan likhein)",
-            "📱 Viral Social Media Script (Reels, YT, Posts)"
+            "🎓 Student Study Tutor (Maths, Science, Code)",
+            "💰 Online Earning & Business Master",
+            "📖 Story & Novel Writer (Kahaniyan)",
+            "📱 Viral Social Media Script"
         ]
     )
     
     st.markdown("---")
     
-    # Sub-features based on selected mode
-    if mode == "🎓 Student Study Tutor (Maths, Science, History, Code)":
-        study_level = st.selectbox("Student Class / Level:", ["School (Class 1-10)", "College / 11th-12th", "Competitive Exam / UPSC / JEE", "Coding & Technical"])
-        explain_style = st.selectbox("Samjhane Ka Tarika:", ["Step-by-step with simple examples", "Short & Quick Summary", "Exam Notes & Question Answers"])
+    if mode == "🎓 Student Study Tutor (Maths, Science, Code)":
+        study_level = st.selectbox("Class / Level:", ["School (1-10)", "College / 11th-12th", "Competitive Exam", "Coding & Tech"])
+        explain_style = st.selectbox("Style:", ["Step-by-step with examples", "Short Summary", "Exam Notes"])
         
-    elif mode == "💰 Online Earning & Business Master (Ghar baithe kamayi)":
-        earning_category = st.selectbox("Category:", ["Freelancing & Skills", "Content Creation & YouTube", "Affiliate Marketing & Blogging", "Zero Investment Hustles", "AI Tools & Automation"])
+    elif mode == "💰 Online Earning & Business Master":
+        earning_cat = st.selectbox("Category:", ["Freelancing & Skills", "Content Creation / YouTube", "Affiliate Marketing", "Zero Investment"])
         
-    elif mode == "📖 Story & Novel Writer (Kahaniyan likhein)":
-        story_genre = st.selectbox("Story Type:", ["Horror & Suspense 👻", "Emotional & Love Story ❤️", "Motivational & Real Life 🚀", "Crime & Thriller 🕵️", "Desi Village Tales 🌾"])
-        story_length = st.select_slider("Length:", options=["Short (1-2 Min)", "Full Story Script", "Deep Long Story"])
+    elif mode == "📖 Story & Novel Writer (Kahaniyan)":
+        story_genre = st.selectbox("Genre:", ["Horror & Suspense 👻", "Emotional & Love ❤️", "Motivational 🚀", "Crime & Thriller 🕵️", "Desi Tales 🌾"])
+        story_len = st.select_slider("Length:", options=["Short (1-2 Min)", "Full Story Script", "Deep Long Story"])
         
-    elif mode == "📱 Viral Social Media Script (Reels, YT, Posts)":
+    elif mode == "📱 Viral Social Media Script":
         platform = st.selectbox("Platform:", ["Instagram Reels", "YouTube Shorts", "Facebook Video", "LinkedIn Post", "Twitter Thread"])
 
     st.markdown("---")
-    if st.button("🗑️ New Chat (Screen Clear Karein)"):
+    if st.button("🗑️ New Chat (Clear Screen)"):
         st.session_state.messages = []
         st.rerun()
 
-# Top Active Mode Display
-st.markdown(f'<div class="top-mode-pill">Active: {mode.split("(")[0]}</div>', unsafe_allow_html=True)
+# Top Active Status
+mode_label = mode.split("(")[0]
+st.markdown(f'<div class="top-pill">Active: {mode_label}</div>', unsafe_allow_html=True)
 
-# Conversation History Memory
+# Chat History Session
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# Display Messages on Screen
+# Display Message History
 for msg in st.session_state.messages:
     with st.chat_message(msg["role"]):
         st.markdown(msg["content"])
 
-# Bottom Unified Chat Input
-user_query = st.chat_input("Pucho kuch bhi, baat karo, padhai ya kamayi ka idea...")
+# Bottom Input Bar
+user_query = st.chat_input("Pucho kuch bhi, padhai, kamayi ya kahani...")
 
 if user_query:
-    # Append & Show user message
     st.session_state.messages.append({"role": "user", "content": user_query})
     with st.chat_message("user"):
         st.markdown(user_query)
 
     with st.chat_message("assistant"):
-        with st.spinner("AI soch kar likh raha hai..."):
+        with st.spinner("AI likh raha hai..."):
             
-            # Dynamic prompt engineering for each specialized feature
             if "Student Study Tutor" in mode:
-                system_prompt = f"""
-                You are an expert personalized tutor for {study_level}.
-                User query: '{user_query}'
-                Explain style: {explain_style}.
-                Explain concepts clearly, solve problems step-by-step, give practical real-world examples, and keep it extremely easy to understand in clean Hinglish/Hindi or English as asked.
-                """
+                system_prompt = f"You are an expert tutor for {study_level}. Solve/explain step-by-step with clear examples: {user_query}. Style: {explain_style}."
             elif "Online Earning" in mode:
-                system_prompt = f"""
-                You are a practical digital entrepreneur and online income consultant.
-                Topic: '{user_query}'
-                Focus Category: {earning_category}.
-                Provide realistic, actionable, and 100% legitimate steps to earn money online.
-                Breakdown: What skills are needed, step-by-step starting roadmap, which platforms to use, and how to get first client or revenue. Avoid generic fake scams.
-                """
+                system_prompt = f"You are a digital income expert. Category: {earning_cat}. Give actionable roadmap, platforms, and real steps to earn for: {user_query}."
             elif "Story & Novel Writer" in mode:
-                system_prompt = f"""
-                You are a master fiction novelist and scriptwriter.
-                Write a complete, gripping story on: '{user_query}'.
-                Genre: {story_genre}
-                Length: {story_length}
-                Include strong character development, suspenseful hooks, vivid sensory descriptions, and a powerful ending.
-                """
+                system_prompt = f"Write an engaging story on '{user_query}'. Genre: {story_genre}, Length: {story_len}. Include title, gripping hooks, climax and emotional finish."
             elif "Viral Social Media" in mode:
-                system_prompt = f"""
-                You are a world-class viral content strategist.
-                Create high-retention content for {platform} on topic: '{user_query}'.
-                Include 3 viral hooks (0-3s), scene-by-scene script with visual cues, high-converting caption with call to action, and 15 targeted hashtags.
-                """
+                system_prompt = f"Create high-retention content for {platform} on '{user_query}'. Include 3 viral hooks (0-3s), scene script, caption, CTA, and 15 hashtags."
             else:
-                # Full free conversational AI (Gemini / ChatGPT style)
-                system_prompt = f"""
-                You are an exceptionally smart, helpful, empathetic, and witty AI companion like ChatGPT.
-                You can converse naturally, advise on life, explain coding, write poetry, solve queries, and hold long contextual conversations.
-                Answer clearly to: '{user_query}'.
-                """
+                system_prompt = f"You are a versatile, helpful AI like ChatGPT. Answer user query comprehensively: '{user_query}'."
 
             try:
-                # Include context history in query
                 context = "\n".join([f"{m['role']}: {m['content']}" for m in st.session_state.messages[-4:]])
-                full_request = f"Recent Conversation Context:\n{context}\n\nTask Instructions:\n{system_prompt}"
+                full_request = f"Chat Context:\n{context}\n\nTask:\n{system_prompt}"
                 
                 response = model.generate_content(full_request)
                 reply = response.text
