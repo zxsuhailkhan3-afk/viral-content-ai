@@ -3,7 +3,6 @@ import requests
 import json
 from datetime import datetime
 
-# Mobile Viewport Settings
 st.set_page_config(
     page_title="Gemini",
     page_icon="✨",
@@ -11,21 +10,17 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# PURE ULTRA-DARK THEME CSS
 st.markdown("""
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <style>
-    /* Absolute Dark Background */
     html, body, [data-testid="stAppViewContainer"], .stApp {
         background-color: #0d0d12 !important;
         color: #F3F4F6 !important;
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
     }
-    
     header[data-testid="stHeader"] {
         display: none !important;
     }
-    
     .block-container {
         padding-top: 1rem !important;
         padding-bottom: 7.5rem !important;
@@ -33,8 +28,6 @@ st.markdown("""
         padding-right: 1rem !important;
         max-width: 100% !important;
     }
-
-    /* 3D Glowing Wave Logo */
     .logo-container {
         display: flex;
         justify-content: center;
@@ -53,8 +46,6 @@ st.markdown("""
         align-items: center;
         font-size: 2.8rem;
     }
-
-    /* Glowing AI Avatar Orb */
     .center-ai-orb {
         width: 110px;
         height: 110px;
@@ -67,8 +58,6 @@ st.markdown("""
         align-items: center;
         font-size: 2.2rem;
     }
-
-    /* Buttons */
     .stButton>button {
         background-color: #1a1a24 !important;
         color: #E2E8F0 !important;
@@ -81,8 +70,6 @@ st.markdown("""
         border-color: #6366f1 !important;
         color: #FFFFFF !important;
     }
-
-    /* Floating Rounded Input Box */
     div[data-testid="stChatInput"] {
         border-radius: 30px !important;
         background-color: #1a1a26 !important;
@@ -94,7 +81,6 @@ st.markdown("""
         color: #FFFFFF !important;
         font-size: 1.05rem !important;
     }
-
     section[data-testid="stSidebar"] {
         background-color: #111118 !important;
         border-right: 1px solid #222232 !important;
@@ -102,10 +88,9 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# OPENROUTER AUTHENTICATED KEY
-OPENROUTER_API_KEY = "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"
+# Securely Read Key from Secrets, with direct fallback
+OPENROUTER_API_KEY = st.secrets.get("OPENROUTER_API_KEY", "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")
 
-# State Handlers
 if "auth_status" not in st.session_state:
     st.session_state.auth_status = "login"
 if "user_name" not in st.session_state:
@@ -119,7 +104,6 @@ if "is_pinned" not in st.session_state:
 if "selected_model" not in st.session_state:
     st.session_state.selected_model = "3.8 Flash (All-around help)"
 
-# Model Mapping via OpenRouter
 MODEL_MAP = {
     "3.8 Flash (All-around help)": "google/gemini-2.0-flash-exp:free",
     "3.5 Flash-Lite (Fastest answers)": "google/gemini-flash-1.5:free",
@@ -134,13 +118,11 @@ def call_openrouter(prompt_text, chosen_model_name):
         "Authorization": f"Bearer {OPENROUTER_API_KEY}",
         "Content-Type": "application/json",
         "HTTP-Referer": "https://streamlit.io",
-        "X-Title": "OmniGeminiAI"
+        "X-Title": "GeminiAIApp"
     }
     payload = {
         "model": model_id,
-        "messages": [
-            {"role": "user", "content": prompt_text}
-        ]
+        "messages": [{"role": "user", "content": prompt_text}]
     }
     try:
         res = requests.post(url, headers=headers, json=payload, timeout=40)
@@ -148,21 +130,16 @@ def call_openrouter(prompt_text, chosen_model_name):
         if res.status_code == 200:
             return data["choices"][0]["message"]["content"]
         else:
-            # Fallback to high availability free model if required
-            err_msg = data.get("error", {}).get("message", res.text)
-            if "not available" in err_msg.lower() or res.status_code != 200:
-                payload["model"] = "meta-llama/llama-3.3-70b-instruct:free"
-                fb_res = requests.post(url, headers=headers, json=payload, timeout=40)
-                fb_data = fb_res.json()
-                if fb_res.status_code == 200:
-                    return fb_data["choices"][0]["message"]["content"]
-            return f"Error ({res.status_code}): {err_msg}"
+            payload["model"] = "meta-llama/llama-3.3-70b-instruct:free"
+            fb_res = requests.post(url, headers=headers, json=payload, timeout=40)
+            fb_data = fb_res.json()
+            if fb_res.status_code == 200:
+                return fb_data["choices"][0]["message"]["content"]
+            return f"Error ({res.status_code}): {data.get('error', {}).get('message', res.text)}"
     except Exception as e:
         return f"Network Error: {e}"
 
-# ==========================================
-# 1. SCREEN 1: LOGIN / ONBOARDING
-# ==========================================
+# SCREEN 1: LOGIN
 if st.session_state.auth_status == "login":
     st.markdown("""
     <div class="logo-container">
@@ -197,9 +174,7 @@ if st.session_state.auth_status == "login":
         with c3:
             st.button("📘 Facebook", use_container_width=True)
 
-# ==========================================
-# 2. SCREEN 2: PERMISSION POPUP
-# ==========================================
+# SCREEN 2: PERMISSION
 elif st.session_state.auth_status == "permission":
     st.markdown("""
     <div style="text-align: center; margin-top: 20vh;">
@@ -221,11 +196,8 @@ elif st.session_state.auth_status == "permission":
             st.session_state.auth_status = "app"
             st.rerun()
 
-# ==========================================
-# 3. SCREEN 3: MAIN APP INTERFACE
-# ==========================================
+# SCREEN 3: DASHBOARD
 elif st.session_state.auth_status == "app":
-    # Sidebar
     with st.sidebar:
         st.markdown("## ✨ Gemini AI")
         if st.button("➕ New Chat", use_container_width=True):
@@ -248,7 +220,6 @@ elif st.session_state.auth_status == "app":
             st.session_state.all_chats = {"Current Chat": []}
             st.rerun()
 
-    # Top Bar & Action Popover (⋮)
     col_head, col_pop = st.columns([8, 2])
     with col_head:
         pin = "📌 " if st.session_state.is_pinned else ""
@@ -277,7 +248,6 @@ elif st.session_state.auth_status == "app":
 
     current_chat = st.session_state.all_chats[st.session_state.active_chat]
 
-    # Greeting & 4 Quick Assistants
     if len(current_chat) == 0:
         st.markdown(f"""
         <div style="text-align: center; margin-top: 1rem;">
@@ -323,12 +293,10 @@ elif st.session_state.auth_status == "app":
                     current_chat.append({"role": "assistant", "content": reply})
                 st.rerun()
 
-    # Render History
     for msg in current_chat:
         with st.chat_message(msg["role"]):
             st.markdown(msg["content"])
 
-    # Model Dropdown Selection
     col_m, _ = st.columns([3, 1])
     with col_m:
         st.session_state.selected_model = st.selectbox(
@@ -342,7 +310,6 @@ elif st.session_state.auth_status == "app":
             index=0
         )
 
-    # Bottom Chat Input
     user_query = st.chat_input("Ask Gemini...")
 
     if user_query:
@@ -354,7 +321,6 @@ elif st.session_state.auth_status == "app":
             with st.spinner("Gemini soch raha hai..."):
                 context = "\n".join([f"{m['role']}: {m['content']}" for m in current_chat[-3:]])
                 prompt = f"Context:\n{context}\n\nTask: {user_query}\nJawab Hinglish/Hindi ya English mein clear dein."
-                
                 ans = call_openrouter(prompt, st.session_state.selected_model)
                 st.markdown(ans)
                 current_chat.append({"role": "assistant", "content": ans})
