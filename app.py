@@ -101,32 +101,29 @@ if "active_chat" not in st.session_state:
 if "is_pinned" not in st.session_state:
     st.session_state.is_pinned = False
 if "selected_model" not in st.session_state:
-    st.session_state.selected_model = "Gemini Flash Lite (Fast & Active)"
+    st.session_state.selected_model = "Auto Free AI (Sabse Fast & Active)"
 
-# Working and verified free models
 MODEL_MAP = {
-    "Gemini Flash Lite (Fast & Active)": "google/gemini-2.0-flash-lite-preview-02-05:free",
-    "Llama 3.3 70B (High Intelligence)": "meta-llama/llama-3.3-70b-instruct:free",
-    "Mistral Small (Advanced Reasoning)": "mistralai/mistral-small-24b-instruct-2501:free",
-    "DeepSeek R1 (Complex Logic)": "deepseek/deepseek-r1:free"
+    "Auto Free AI (Sabse Fast & Active)": "openrouter/free",
+    "Smart Free Model": "openrouter/free"
 }
 
 def call_openrouter(prompt_text, chosen_model_name):
     if not OPENROUTER_API_KEY:
-        return "Secret Key Missing: Streamlit Secrets me OPENROUTER_API_KEY save karein."
+        return "Secret Key Missing: Streamlit Secrets me OPENROUTER_API_KEY check karein."
         
-    model_id = MODEL_MAP.get(chosen_model_name, "google/gemini-2.0-flash-lite-preview-02-05:free")
+    model_id = MODEL_MAP.get(chosen_model_name, "openrouter/free")
     url = "https://openrouter.ai/api/v1/chat/completions"
     headers = {
         "Authorization": f"Bearer {OPENROUTER_API_KEY}",
         "Content-Type": "application/json",
         "HTTP-Referer": "https://streamlit.io",
-        "X-Title": "GeminiAIApp"
+        "X-Title": "ViralContentAI"
     }
     payload = {
         "model": model_id,
         "messages": [
-            {"role": "system", "content": "You are Gemini, a helpful and structured AI assistant."},
+            {"role": "system", "content": "You are a professional AI assistant. Give structured, helpful responses."},
             {"role": "user", "content": prompt_text}
         ]
     }
@@ -135,13 +132,6 @@ def call_openrouter(prompt_text, chosen_model_name):
         data = res.json()
         if res.status_code == 200:
             return data["choices"][0]["message"]["content"]
-        
-        # Primary fail hone par Llama backup
-        payload["model"] = "meta-llama/llama-3.3-70b-instruct:free"
-        fb_res = requests.post(url, headers=headers, json=payload, timeout=40)
-        fb_data = fb_res.json()
-        if fb_res.status_code == 200:
-            return fb_data["choices"][0]["message"]["content"]
         return f"Error ({res.status_code}): {data.get('error', {}).get('message', res.text)}"
     except Exception as e:
         return f"Network Error: {e}"
@@ -298,34 +288,4 @@ elif st.session_state.auth_status == "app":
                 with st.spinner("Processing..."):
                     reply = call_openrouter(f"Act as viral strategist: {q}", st.session_state.selected_model)
                     current_chat.append({"role": "assistant", "content": reply})
-                st.rerun()
-
-    for msg in current_chat:
-        with st.chat_message(msg["role"]):
-            st.markdown(msg["content"])
-
-    col_m, _ = st.columns([3, 1])
-    with col_m:
-        st.session_state.selected_model = st.selectbox(
-            "⚡ AI Model:",
-            [
-                "Gemini Flash Lite (Fast & Active)",
-                "Llama 3.3 70B (High Intelligence)",
-                "Mistral Small (Advanced Reasoning)",
-                "DeepSeek R1 (Complex Logic)"
-            ],
-            index=0
-        )
-
-    user_query = st.chat_input("Ask Gemini...")
-
-    if user_query:
-        current_chat.append({"role": "user", "content": user_query})
-        with st.chat_message("user"):
-            st.markdown(user_query)
-
-        with st.chat_message("assistant"):
-            with st.spinner("Generating answer..."):
-                ans = call_openrouter(user_query, st.session_state.selected_model)
-                st.markdown(ans)
-                current_chat.append({"role": "assistant", "content": ans})
+                st
