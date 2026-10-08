@@ -1,10 +1,8 @@
 import streamlit as st
 import requests
 import json
-import base64
 from datetime import datetime
 
-# Mobile Viewport Settings
 st.set_page_config(
     page_title="Gemini",
     page_icon="✨",
@@ -12,7 +10,6 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# Dark UI Styling
 st.markdown("""
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <style>
@@ -91,9 +88,8 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# Encoded Key taaki GitHub ya OpenRouter bot ise detect aur block na kar sake
-_KEY_B64 = "c2stb3ItdjEtZmZmZDk2NzJhYmFmNmZhZDkyZDM4MGRjOTk4ZjJlYzgxNjZmYjY2ZjIzMGVhMzhiM2IyNzVhMjIzNzZiOTgzMw=="
-OPENROUTER_API_KEY = base64.b64decode(_KEY_B64).decode("utf-8")
+# Key secure tarike se Secrets se fetch hogi
+OPENROUTER_API_KEY = st.secrets.get("OPENROUTER_API_KEY", "")
 
 if "auth_status" not in st.session_state:
     st.session_state.auth_status = "login"
@@ -116,6 +112,9 @@ MODEL_MAP = {
 }
 
 def call_openrouter(prompt_text, chosen_model_name):
+    if not OPENROUTER_API_KEY:
+        return "Secret Key Missing: Kripya Streamlit Secrets me OPENROUTER_API_KEY save karein."
+        
     model_id = MODEL_MAP.get(chosen_model_name, "google/gemini-2.0-flash-exp:free")
     url = "https://openrouter.ai/api/v1/chat/completions"
     headers = {
