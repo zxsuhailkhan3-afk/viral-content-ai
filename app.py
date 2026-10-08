@@ -88,7 +88,6 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# Key secure tarike se Secrets se fetch hogi
 OPENROUTER_API_KEY = st.secrets.get("OPENROUTER_API_KEY", "")
 
 if "auth_status" not in st.session_state:
@@ -102,20 +101,21 @@ if "active_chat" not in st.session_state:
 if "is_pinned" not in st.session_state:
     st.session_state.is_pinned = False
 if "selected_model" not in st.session_state:
-    st.session_state.selected_model = "3.8 Flash (All-around help)"
+    st.session_state.selected_model = "Gemini Flash Lite (Fast & Active)"
 
+# Working and verified free models
 MODEL_MAP = {
-    "3.8 Flash (All-around help)": "google/gemini-2.0-flash-exp:free",
-    "3.5 Flash-Lite (Fastest answers)": "google/gemini-flash-1.5:free",
-    "3.1 Pro (Advanced reasoning)": "google/gemini-pro-1.5:free",
-    "Extended thinking (Complex problem solving)": "google/gemini-2.0-flash-thinking-exp:free"
+    "Gemini Flash Lite (Fast & Active)": "google/gemini-2.0-flash-lite-preview-02-05:free",
+    "Llama 3.3 70B (High Intelligence)": "meta-llama/llama-3.3-70b-instruct:free",
+    "Mistral Small (Advanced Reasoning)": "mistralai/mistral-small-24b-instruct-2501:free",
+    "DeepSeek R1 (Complex Logic)": "deepseek/deepseek-r1:free"
 }
 
 def call_openrouter(prompt_text, chosen_model_name):
     if not OPENROUTER_API_KEY:
-        return "Secret Key Missing: Kripya Streamlit Secrets me OPENROUTER_API_KEY save karein."
+        return "Secret Key Missing: Streamlit Secrets me OPENROUTER_API_KEY save karein."
         
-    model_id = MODEL_MAP.get(chosen_model_name, "google/gemini-2.0-flash-exp:free")
+    model_id = MODEL_MAP.get(chosen_model_name, "google/gemini-2.0-flash-lite-preview-02-05:free")
     url = "https://openrouter.ai/api/v1/chat/completions"
     headers = {
         "Authorization": f"Bearer {OPENROUTER_API_KEY}",
@@ -125,24 +125,28 @@ def call_openrouter(prompt_text, chosen_model_name):
     }
     payload = {
         "model": model_id,
-        "messages": [{"role": "user", "content": prompt_text}]
+        "messages": [
+            {"role": "system", "content": "You are Gemini, a helpful and structured AI assistant."},
+            {"role": "user", "content": prompt_text}
+        ]
     }
     try:
         res = requests.post(url, headers=headers, json=payload, timeout=40)
         data = res.json()
         if res.status_code == 200:
             return data["choices"][0]["message"]["content"]
-        else:
-            payload["model"] = "meta-llama/llama-3.3-70b-instruct:free"
-            fb_res = requests.post(url, headers=headers, json=payload, timeout=40)
-            fb_data = fb_res.json()
-            if fb_res.status_code == 200:
-                return fb_data["choices"][0]["message"]["content"]
-            return f"Error ({res.status_code}): {data.get('error', {}).get('message', res.text)}"
+        
+        # Primary fail hone par Llama backup
+        payload["model"] = "meta-llama/llama-3.3-70b-instruct:free"
+        fb_res = requests.post(url, headers=headers, json=payload, timeout=40)
+        fb_data = fb_res.json()
+        if fb_res.status_code == 200:
+            return fb_data["choices"][0]["message"]["content"]
+        return f"Error ({res.status_code}): {data.get('error', {}).get('message', res.text)}"
     except Exception as e:
         return f"Network Error: {e}"
 
-# --- SCREEN 1: LOGIN ---
+# SCREEN 1: LOGIN
 if st.session_state.auth_status == "login":
     st.markdown("""
     <div class="logo-container">
@@ -177,7 +181,7 @@ if st.session_state.auth_status == "login":
         with c3:
             st.button("📘 Facebook", use_container_width=True)
 
-# --- SCREEN 2: PERMISSION ---
+# SCREEN 2: PERMISSION
 elif st.session_state.auth_status == "permission":
     st.markdown("""
     <div style="text-align: center; margin-top: 20vh;">
@@ -199,7 +203,7 @@ elif st.session_state.auth_status == "permission":
             st.session_state.auth_status = "app"
             st.rerun()
 
-# --- SCREEN 3: MAIN GEMINI APP ---
+# SCREEN 3: MAIN GEMINI APP
 elif st.session_state.auth_status == "app":
     with st.sidebar:
         st.markdown("## ✨ Gemini AI")
@@ -303,12 +307,12 @@ elif st.session_state.auth_status == "app":
     col_m, _ = st.columns([3, 1])
     with col_m:
         st.session_state.selected_model = st.selectbox(
-            "⚡ Gemini Model:",
+            "⚡ AI Model:",
             [
-                "3.8 Flash (All-around help)",
-                "3.5 Flash-Lite (Fastest answers)",
-                "3.1 Pro (Advanced reasoning)",
-                "Extended thinking (Complex problem solving)"
+                "Gemini Flash Lite (Fast & Active)",
+                "Llama 3.3 70B (High Intelligence)",
+                "Mistral Small (Advanced Reasoning)",
+                "DeepSeek R1 (Complex Logic)"
             ],
             index=0
         )
@@ -321,9 +325,7 @@ elif st.session_state.auth_status == "app":
             st.markdown(user_query)
 
         with st.chat_message("assistant"):
-            with st.spinner("Gemini soch raha hai..."):
-                context = "\n".join([f"{m['role']}: {m['content']}" for m in current_chat[-3:]])
-                prompt = f"Context:\n{context}\n\nTask: {user_query}\nJawab Hinglish/Hindi ya English mein clear dein."
-                ans = call_openrouter(prompt, st.session_state.selected_model)
+            with st.spinner("Generating answer..."):
+                ans = call_openrouter(user_query, st.session_state.selected_model)
                 st.markdown(ans)
                 current_chat.append({"role": "assistant", "content": ans})
